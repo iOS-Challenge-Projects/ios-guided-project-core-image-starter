@@ -10,6 +10,23 @@ class PhotoFilterViewController: UIViewController {
 	
 	private var originalImage: UIImage? {
 		didSet {
+
+			guard let originalImage = originalImage else { return }
+			
+			var scaledSize = imageView.bounds.size
+			
+			// 1x 2x 3x  (400 points * 3x = 1,200 pixels)
+			let scale = UIScreen.main.scale
+			
+			scaledSize = CGSize(width: scaledSize.width * scale,
+							   height: scaledSize.height * scale)
+			
+			scaledImage = originalImage.imageByScaling(toSize: scaledSize)
+		}
+	}
+		
+	private var scaledImage: UIImage? {
+		didSet {
 			updateView()
 		}
 	}
@@ -106,9 +123,7 @@ extension PhotoFilterViewController: UIImagePickerControllerDelegate, UINavigati
 	}
 	
 	func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-		
-		// set the image and update the display
-		
+				
 		// TODO: Play with the edited image
 		
 		if let image = info[.originalImage] as? UIImage {
