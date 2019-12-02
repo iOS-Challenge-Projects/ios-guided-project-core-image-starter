@@ -4,6 +4,10 @@ import Photos
 
 class PhotoFilterViewController: UIViewController {
 
+	// Properties
+	private let context = CIContext(options: nil)
+	private let filter = CIFilter(name: "CIColorControls")! // Can crash!
+	
 	@IBOutlet var brightnessSlider: UISlider!
 	@IBOutlet var contrastSlider: UISlider!
 	@IBOutlet var saturationSlider: UISlider!
@@ -40,5 +44,30 @@ class PhotoFilterViewController: UIViewController {
 	@IBAction func saturationChanged(_ sender: Any) {
 
 	}
+	
+	// Private functions
+	
+	private func filterImage(_ image: UIImage) -> UIImage {
+		guard let cgImage = image.cgImage else { return image }
+		
+		let ciImage = CIImage(cgImage: cgImage)
+		
+		// Set the filter values
+		filter.setValue(ciImage, forKey: "inputImage")
+		filter.setValue(saturationSlider.value, forKey: "inputSaturation")
+		filter.setValue(brightnessSlider.value, forKey: "inputBrightness")
+		filter.setValue(contrastSlider.value, forKey: "inputContrast")
+		
+		guard let outputCIImage = filter.outputImage else { return image }
+		
+		let bounds = CGRect(origin: CGPoint.zero, size: image.size)
+		guard let outputCGImage = context.createCGImage(outputCIImage,
+														from: bounds) else {
+															return image }
+		
+		
+		return UIImage(cgImage: outputCGImage)
+	}
+	
 }
 
