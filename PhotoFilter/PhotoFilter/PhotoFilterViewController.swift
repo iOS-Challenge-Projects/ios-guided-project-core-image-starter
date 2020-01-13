@@ -26,9 +26,11 @@ class PhotoFilterViewController: UIViewController {
 		}
 	}
 	
-	private var filter = CIFilter(name: "CIColorControls")!
+//	private var filter = CIFilter(name: "CIColorControls")!
+	private var filter = CIFilter(name: "CIPinchDistortion")!
 	private var context = CIContext(options: nil)
-
+	private var imagePosition = CGPoint.zero
+	
 	@IBOutlet var brightnessSlider: UISlider!
 	@IBOutlet var contrastSlider: UISlider!
 	@IBOutlet var saturationSlider: UISlider!
@@ -38,7 +40,23 @@ class PhotoFilterViewController: UIViewController {
 		super.viewDidLoad()
 
 		originalImage = imageView.image
+		
+		// PanGesture
+		let panGesture = UIPanGestureRecognizer(target: self, action: #selector(handlePanGesture(panGesture:)))
+		imageView.addGestureRecognizer(panGesture)
+		imageView.isUserInteractionEnabled = true
 	}
+
+	@objc private func handlePanGesture(panGesture: UIPanGestureRecognizer) {
+		let location = panGesture.location(in: imageView)
+		if panGesture.state == .changed {
+			
+			print("Pos: \(location)")
+			imagePosition = location
+			updateImage()
+		} // TODO: deal with .began and .ended
+	}
+	
 	
 	private func filterImage(_ image: UIImage) -> UIImage {
 		guard let cgImage = image.cgImage else { return image }
@@ -48,10 +66,17 @@ class PhotoFilterViewController: UIViewController {
 		// Set up the filter
 		
 		// k = constant
-		filter.setValue(ciImage, forKey: kCIInputImageKey) // "inputImage")
-		filter.setValue(brightnessSlider.value, forKey: kCIInputBrightnessKey)
-		filter.setValue(contrastSlider.value, forKey: kCIInputContrastKey)
-		filter.setValue(saturationSlider.value, forKey: kCIInputSaturationKey)
+		filter.setValue(ciImage, forKey: kCIInputImageKey)
+	//		filter.setValue(brightnessSlider.value, forKey: kCIInputRadiusKey)
+	//		filter.setValue(contrastSlider.value, forKey: kCIInputScaleKey)
+		filter.setValue(300, forKey: kCIInputRadiusKey)
+		filter.setValue(0.8, forKey: kCIInputScaleKey)
+
+		let scale = UIScreen.main.scale
+		let position = CGPoint(x: imagePosition.x * scale, y: imagePosition.y * scale)
+		let center = CIVector(cgPoint: position)
+		
+		filter.setValue(center, forKey: kCIInputCenterKey)
 		
 		// Get output
 		guard let outputCIImage = filter.outputImage else { return image }
