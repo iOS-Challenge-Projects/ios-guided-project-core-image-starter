@@ -54,20 +54,29 @@ class PhotoFilterViewController: UIViewController {
 
 		// TODO: Save to photo library
 	}
-	
 
 	// MARK: Slider events
 	
 	@IBAction func brightnessChanged(_ sender: UISlider) {
-
+		updateImage()
 	}
-	
+
 	@IBAction func contrastChanged(_ sender: Any) {
-
+		updateImage()
 	}
-	
-	@IBAction func saturationChanged(_ sender: Any) {
 
+	@IBAction func saturationChanged(_ sender: Any) {
+		updateImage()
+	}
+
+	// DRY: Don't Repeat Yourself
+
+	private func updateImage() {
+		if let originalImage = originalImage {
+			imageView.image = filterImage(originalImage)
+		} else {
+			imageView.image = nil
+		}
 	}
 }
 
