@@ -99,9 +99,33 @@ class PhotoFilterViewController: UIViewController {
         showImagePicker()
     }
 	
-	@IBAction func savePhotoButtonPressed(_ sender: UIButton) {
-		// TODO: Save to photo library
-	}
+    @IBAction func savePhotoButtonPressed(_ sender: UIButton) {
+        
+        guard let originalImage = originalImage else { return }
+        guard let processedImage = filterImage(originalImage.flattened) else { return }
+
+        PHPhotoLibrary.requestAuthorization { (status) in
+
+            guard status == .authorized else { fatalError("User did not authorize app to save photos") }
+
+            // Let the library know we are going to make changes
+            PHPhotoLibrary.shared().performChanges({
+
+                // Make a new photo creation request
+                PHAssetCreationRequest.creationRequestForAsset(from: processedImage)
+
+            }, completionHandler: { (success, error) in
+                if let error = error {
+                    print("Error saving photo: \(error)")
+                    return
+                }
+
+                DispatchQueue.main.async {
+                    print("Saved image!")
+                }
+            })
+        }
+    }
 	
 
 	// MARK: Slider events
