@@ -85,6 +85,11 @@ class PhotoFilterViewController: UIViewController {
     }
     
     private func showImagePicker() {
+        guard UIImagePickerController.isSourceTypeAvailable(.photoLibrary) else {
+            print("The photo library is not available")
+            return
+        }        
+        
         let imagePicker = UIImagePickerController()
         imagePicker.sourceType = .photoLibrary
         imagePicker.delegate = self
