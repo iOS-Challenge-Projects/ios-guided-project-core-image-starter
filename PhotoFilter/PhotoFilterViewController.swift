@@ -22,6 +22,12 @@ class ColorFilter: Operation {
         super.init()
     }
     
+    override func start() {
+        if isCancelled {
+            print("Dropping colorFilter, canceled")
+        }
+        super.start()
+    }
     override func main() {
         if !isCancelled {
             guard let cgImage = inputImage.cgImage else { return }
@@ -58,19 +64,20 @@ class PhotoFilterViewController: UIViewController {
 
             // scale down the image
 
-            guard let originalImage = originalImage else { return }
-
-            // Height and width
-            var scaledSize = imageView.bounds.size
-
-            // 1x, 2x, or 3x
-            let scale = UIScreen.main.scale
-
-            scaledSize = CGSize(width: scaledSize.width * scale, height: scaledSize.height * scale)
-            print("size: \(scaledSize)")
-            
-            // Update the display with the scaled image
-            scaledImage = originalImage.imageByScaling(toSize: scaledSize)
+//            guard let originalImage = originalImage else { return }
+//
+//            // Height and width
+//            var scaledSize = imageView.bounds.size
+//
+//            // 1x, 2x, or 3x
+//            let scale = UIScreen.main.scale
+//
+//            scaledSize = CGSize(width: scaledSize.width * scale, height: scaledSize.height * scale)
+//            print("size: \(scaledSize)")
+//
+//            // Update the display with the scaled image
+//            scaledImage = originalImage.imageByScaling(toSize: scaledSize)
+            scaledImage = originalImage
         }
     }
 
@@ -117,13 +124,15 @@ class PhotoFilterViewController: UIViewController {
             
             let updateUIBlock = BlockOperation {
                 print("update")
-                self.imageView.image = colorFilter.outputImage
+                if let image = colorFilter.outputImage {
+                    self.imageView.image = image
+                }
             }
             updateUIBlock.addDependency(colorFilter)
             operationQueue.cancelAllOperations()
 
             operationQueue.addOperation(colorFilter)
-            operationQueue.addOperation(updateUIBlock)
+            OperationQueue.main.addOperation(updateUIBlock)
             
             
             
