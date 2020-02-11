@@ -3,9 +3,55 @@ import CoreImage
 import CoreImage.CIFilterBuiltins
 import Photos
 
+class ColorFilter: Operation {
+    var inputImage: UIImage
+    var outputImage: UIImage?
+    
+    var brightness: Float
+    var contrast: Float
+    var saturation: Float
+    
+    let context = CIContext(options: nil)
+    
+    init(image: UIImage, brightness: Float, contrast: Float, saturation: Float) {
+        self.inputImage = image
+        self.brightness = brightness
+        self.contrast = contrast
+        self.saturation = saturation
+        
+        super.init()
+    }
+    
+    override func main() {
+        if !isCancelled {
+            guard let cgImage = inputImage.cgImage else { return }
+            
+            let ciImage = CIImage(cgImage: cgImage)
+            
+            let filter = CIFilter.colorControls() // Like a recipe
+
+            filter.inputImage = ciImage
+            filter.brightness = brightness
+            filter.contrast = contrast
+            filter.saturation = saturation
+            
+            // CIImage -> CGImage -> UIImage
+            guard let outputCIImage = filter.outputImage else { return }
+
+            // Rendering the image (actually baking the cookies)
+            guard let outputCGImage = context.createCGImage(outputCIImage,
+                                                            from: CGRect(origin: .zero, size: inputImage.size)) else { return }
+            outputImage = UIImage(cgImage: outputCGImage)
+        } else {
+            print("Canceled")
+        }
+    }
+}
+
 class PhotoFilterViewController: UIViewController {
 
     private var context = CIContext(options: nil)
+    private var imageQueue = OperationQueue()
     
     private var originalImage: UIImage? {
         didSet {
@@ -34,6 +80,7 @@ class PhotoFilterViewController: UIViewController {
         }
     }
 
+    private var operationQueue = OperationQueue()
     
 	@IBOutlet weak var brightnessSlider: UISlider!
 	@IBOutlet weak var contrastSlider: UISlider!
@@ -51,11 +98,35 @@ class PhotoFilterViewController: UIViewController {
 //        print(filter.attributes)
         
         originalImage = imageView.image
+        operationQueue.maxConcurrentOperationCount = 1
+    
 	}
     
     func updateImage() {
-        if let scaledImage = scaledImage {
-            imageView.image = filterImage(scaledImage)
+//        if let scaledImage = originalImage {
+        if let originalImage = originalImage {
+
+//            imageView.image = filterImage(scaledImage)
+            print("colorFilter")
+            let colorFilter = ColorFilter(image: originalImage,
+                                     brightness: brightnessSlider.value,
+                                     contrast: contrastSlider.value,
+                                     saturation: saturationSlider.value)
+            
+            
+            
+            let updateUIBlock = BlockOperation {
+                print("update")
+                self.imageView.image = colorFilter.outputImage
+            }
+            updateUIBlock.addDependency(colorFilter)
+            operationQueue.cancelAllOperations()
+
+            operationQueue.addOperation(colorFilter)
+            operationQueue.addOperation(updateUIBlock)
+            
+            
+            
         } else {
             imageView.image = nil // reseting image to nothing
         }
@@ -88,7 +159,7 @@ class PhotoFilterViewController: UIViewController {
         guard UIImagePickerController.isSourceTypeAvailable(.photoLibrary) else {
             print("The photo library is not available")
             return
-        }        
+        }
         
         let imagePicker = UIImagePickerController()
         imagePicker.sourceType = .photoLibrary
