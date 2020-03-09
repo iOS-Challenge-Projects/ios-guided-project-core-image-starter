@@ -5,7 +5,12 @@ import Photos
 
 class PhotoFilterViewController: UIViewController {
 
-    private var originalImage: UIImage?
+    private var originalImage: UIImage? {
+        didSet {
+            imageView.image = originalImage
+        }
+    }
+    
     private let context = CIContext(options: nil)
     
 	@IBOutlet weak var brightnessSlider: UISlider!
@@ -56,13 +61,26 @@ class PhotoFilterViewController: UIViewController {
         }
     }
     
+    private func presentImagePickerController() {
+        guard UIImagePickerController.isSourceTypeAvailable(.photoLibrary) else {
+            print("Error: the photo library is unavailable")
+            return
+        }
+        
+        let imagePicker = UIImagePickerController()
+        imagePicker.sourceType = .photoLibrary
+        imagePicker.delegate = self
+        
+        // if completion is nil, what can I do?
+        present(imagePicker, animated: true)
+    }
+    
     
 	// MARK: Actions
 	
-	@IBAction func choosePhotoButtonPressed(_ sender: Any) {
-		// TODO: show the photo picker so we can choose on-device photos
-		// UIImagePickerController + Delegate
-	}
+    @IBAction func choosePhotoButtonPressed(_ sender: Any) {
+        presentImagePickerController()
+    }
 	
 	@IBAction func savePhotoButtonPressed(_ sender: UIButton) {
 		// TODO: Save to photo library
@@ -84,3 +102,21 @@ class PhotoFilterViewController: UIViewController {
     }
 }
 
+extension PhotoFilterViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+    
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        print("Picked Image")
+        
+        if let image = info[.originalImage] as? UIImage {
+            originalImage = image
+        }
+        
+        picker.dismiss(animated: true)
+    }
+    
+    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+        print("Cancel")
+        
+        picker.dismiss(animated: true)
+    }
+}
