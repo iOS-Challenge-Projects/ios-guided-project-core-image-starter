@@ -5,9 +5,29 @@ import Photos
 
 class PhotoFilterViewController: UIViewController {
 
+    // Does the app behave differently
+    
+    // Image
+    // 5000x3000 pixels
+    // scale the image down to fit in the bounds of the screen
+    // 1200x800 pixels (less pixels = less calculations, so it renders faster)
+    
     private var originalImage: UIImage? {
         didSet {
-            imageView.image = originalImage
+            guard let originalImage = originalImage else { return }
+            
+            var scaledSize = imageView.bounds.size
+            let scale = UIScreen.main.scale // 1x 2x 3x
+
+            scaledSize = CGSize(width: scaledSize.width * scale,
+                                height: scaledSize.height * scale)
+            scaledImage = originalImage.imageByScaling(toSize: scaledSize)
+        }
+    }
+    
+    private var scaledImage: UIImage? {
+        didSet {
+            updateImage()
         }
     }
     
@@ -54,8 +74,8 @@ class PhotoFilterViewController: UIViewController {
     }
     
     private func updateImage() {
-        if let originalImage = originalImage {
-            imageView.image = filterImage(originalImage)
+        if let scaledImage = scaledImage {
+            imageView.image = filterImage(scaledImage)
         } else {
             imageView.image = nil // allows us to clear out the image
         }
