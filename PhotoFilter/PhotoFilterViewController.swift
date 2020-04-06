@@ -7,6 +7,27 @@ class PhotoFilterViewController: UIViewController {
 
     private var originalImage: UIImage? {
         didSet {
+            // resize a scaledImage any time this property is set, so that the UI can update
+            // faster with a "live preview"
+            guard let originalImage = originalImage else { return }
+            
+            var scaledSize = imageView.bounds.size
+            let scale = UIScreen.main.scale // 1x (no iPhones) 2x 3x
+            
+            // Debug statements, take these out for your final submissions
+            print("image size: \(originalImage.size)")
+            print("size: \(scaledSize)")
+            print("scale: \(scale)")
+            
+            // how many pixels can we fit on the screen?
+            scaledSize = CGSize(width: scaledSize.width * scale, height: scaledSize.height * scale)
+            
+            scaledImage = originalImage.imageByScaling(toSize: scaledSize)
+        }
+    }
+    
+    private var scaledImage: UIImage? {
+        didSet {
             updateViews()
         }
     }
@@ -30,16 +51,31 @@ class PhotoFilterViewController: UIViewController {
         originalImage = imageView.image
     }
     
+    private func presentImagePickerController() {
+        
+        guard UIImagePickerController.isSourceTypeAvailable(.photoLibrary) else {
+            print("Error: The photo library is not available")
+            return
+        }
+        
+        let imagePicker = UIImagePickerController()
+        imagePicker.sourceType = .photoLibrary
+        imagePicker.delegate = self
+        
+        present(imagePicker, animated: true, completion: nil)
+    }
+    
     // What happens if I apply a filter multiple times?
 
+    // Why is this slower?
     
     // Where should I call update views?
     // sliders
     // didSet
     
     func updateViews() {
-        if let originalImage = originalImage {
-            imageView.image = filterImage(originalImage)
+        if let scaledImage = scaledImage {
+            imageView.image = filterImage(scaledImage)
         } else {
             imageView.image = nil // placeholder image
         }
@@ -74,10 +110,9 @@ class PhotoFilterViewController: UIViewController {
 	
 	// MARK: Actions
 	
-	@IBAction func choosePhotoButtonPressed(_ sender: Any) {
-		// TODO: show the photo picker so we can choose on-device photos
-		// UIImagePickerController + Delegate
-	}
+    @IBAction func choosePhotoButtonPressed(_ sender: Any) {
+        presentImagePickerController()
+    }
 	
 	@IBAction func savePhotoButtonPressed(_ sender: UIButton) {
 		// TODO: Save to photo library
@@ -99,3 +134,23 @@ class PhotoFilterViewController: UIViewController {
 	}
 }
 
+extension PhotoFilterViewController: UIImagePickerControllerDelegate {
+
+    // What do I want to do when we finish picking?
+    
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        if let image = info[.originalImage] as? UIImage {
+            originalImage = image
+        }
+        
+        picker.dismiss(animated: true)
+    }
+    
+    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+        picker.dismiss(animated: true)
+    }
+}
+
+extension PhotoFilterViewController: UINavigationControllerDelegate {
+
+}
