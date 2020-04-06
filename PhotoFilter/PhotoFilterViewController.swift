@@ -1,18 +1,57 @@
 import UIKit
 import CoreImage
+import CoreImage.CIFilterBuiltins
 import Photos
 
 class PhotoFilterViewController: UIViewController {
 
+    private var originalImage: UIImage?
+    private var context = CIContext(options: nil)
+    
 	@IBOutlet weak var brightnessSlider: UISlider!
 	@IBOutlet weak var contrastSlider: UISlider!
 	@IBOutlet weak var saturationSlider: UISlider!
 	@IBOutlet weak var imageView: UIImageView!
 	
-	override func viewDidLoad() {
-		super.viewDidLoad()
+    override func viewDidLoad() {
+        super.viewDidLoad()
 
-	}
+        let filter = CIFilter.colorControls()
+        print(filter)
+        
+        print(filter.attributes)
+        
+        
+    }
+    
+    // What happens if I apply a filter multiple times?
+
+    func filterImage(_ image: UIImage) -> UIImage? {
+        
+        // UIImage -> CGImage (Core Graphics) -> CIImage (Core Image)
+        guard let cgImage = image.cgImage else { return nil }
+        
+        let ciImage = CIImage(cgImage: cgImage)
+        
+        // Filter = recipe
+        let filter = CIFilter.colorControls()
+        
+        filter.inputImage = ciImage
+        filter.brightness = brightnessSlider.value
+        filter.contrast = contrastSlider.value
+        filter.saturation = saturationSlider.value
+        
+        guard let outputCIImage = filter.outputImage else { return nil }
+        
+        // Render the image
+        guard let outputCGImage = context.createCGImage(outputCIImage,
+                                                        from: CGRect(origin: .zero, size: image.size)) else {
+                                                            return nil
+        }
+        
+        // CIImage -> CGImage -> UIImage
+        return UIImage(cgImage: outputCGImage)
+    }
 	
 	// MARK: Actions
 	
