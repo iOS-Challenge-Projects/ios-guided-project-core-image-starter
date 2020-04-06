@@ -5,7 +5,12 @@ import Photos
 
 class PhotoFilterViewController: UIViewController {
 
-    private var originalImage: UIImage?
+    private var originalImage: UIImage? {
+        didSet {
+            updateViews()
+        }
+    }
+    
     private var context = CIContext(options: nil)
     
 	@IBOutlet weak var brightnessSlider: UISlider!
@@ -21,11 +26,25 @@ class PhotoFilterViewController: UIViewController {
         
         print(filter.attributes)
         
-        
+        // Test the filter quickly
+        originalImage = imageView.image
     }
     
     // What happens if I apply a filter multiple times?
 
+    
+    // Where should I call update views?
+    // sliders
+    // didSet
+    
+    func updateViews() {
+        if let originalImage = originalImage {
+            imageView.image = filterImage(originalImage)
+        } else {
+            imageView.image = nil // placeholder image
+        }
+    }
+    
     func filterImage(_ image: UIImage) -> UIImage? {
         
         // UIImage -> CGImage (Core Graphics) -> CIImage (Core Image)
@@ -68,15 +87,15 @@ class PhotoFilterViewController: UIViewController {
 	// MARK: Slider events
 	
 	@IBAction func brightnessChanged(_ sender: UISlider) {
-
+        updateViews()
 	}
 	
 	@IBAction func contrastChanged(_ sender: Any) {
-
+        updateViews()
 	}
 	
 	@IBAction func saturationChanged(_ sender: Any) {
-
+        updateViews()
 	}
 }
 
