@@ -114,9 +114,38 @@ class PhotoFilterViewController: UIViewController {
         presentImagePickerController()
     }
 	
-	@IBAction func savePhotoButtonPressed(_ sender: UIButton) {
-		// TODO: Save to photo library
-	}
+@IBAction func savePhotoButtonPressed(_ sender: UIButton) {
+    guard let originalImage = originalImage else { return }
+    
+    guard let processedImage = filterImage(originalImage.flattened) else { return } // flatten/orientation
+    
+    PHPhotoLibrary.requestAuthorization { (status) in
+        
+        guard status == .authorized else {
+            // request access, show the User how to enable Privacy Permission in Settings
+            return
+        }
+        
+        // Let the library know we are going to make changes
+        PHPhotoLibrary.shared().performChanges({
+            
+            // Make a new photo creation request
+            
+            PHAssetCreationRequest.creationRequestForAsset(from: processedImage)
+            
+        }, completionHandler: { (success, error) in
+            
+            if let error = error {
+                NSLog("Error saving photo: \(error)")
+                return
+            }
+            
+            DispatchQueue.main.async {
+                print("Saved Photo")
+            }
+        })
+    }
+}
 	
 
 	// MARK: Slider events
