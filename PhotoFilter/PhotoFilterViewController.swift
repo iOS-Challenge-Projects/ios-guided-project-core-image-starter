@@ -53,13 +53,15 @@ class PhotoFilterViewController: UIViewController {
     
     func presentImagePickerController() {
         guard UIImagePickerController.isSourceTypeAvailable(.photoLibrary) else {
-            NSLog("Error the photo library is not available.")
+            print("Error the photo library is not available.")
             return
         }
         
         let imagePicker = UIImagePickerController()
         imagePicker.sourceType = .photoLibrary
         imagePicker.delegate = self
+        
+        present(imagePicker, animated: true, completion: nil)
     }
     
     func updateViews() {
@@ -99,6 +101,45 @@ class PhotoFilterViewController: UIViewController {
         return UIImage(cgImage: outputCGImage)
     }
     
+    func savePhotoToLibrary() {
+        
+        //Unwrap image
+        guard let originalImage = originalImage else { return }
+        //Pass image to filter original image using our method
+        guard let processImage = filterImage(originalImage) else { return }
+        
+        //Request access
+        PHPhotoLibrary.requestAuthorization { (status) in
+            
+            guard status == .authorized else {
+                //Request access.
+                //Optional show user how to enable
+                //Privacy permission in setting
+                //by using a hot link to take user to the settings
+                return
+            }
+            
+            //Let library know we are going to make changes
+            PHPhotoLibrary.shared().performChanges({
+                
+                //Make the photo creation request
+                PHAssetCreationRequest.creationRequestForAsset(from: processImage)
+                
+            }) { (sucess, error) in
+                //Handle errors
+                if let error = error {
+                    NSLog("Error saving photo: \(error)")
+                }
+                
+                DispatchQueue.main.async {
+                    //We can show a message to user to let them known
+                    //INstead of just printing message to developer
+                    print("Saved photo")
+                }
+            }
+        }
+    }
+    
 	//MARK: - Actions
 	
 	@IBAction func choosePhotoButtonPressed(_ sender: Any) {
@@ -110,7 +151,7 @@ class PhotoFilterViewController: UIViewController {
 	
 	@IBAction func savePhotoButtonPressed(_ sender: UIButton) {
 		// TODO: Save to photo library
-        
+        savePhotoToLibrary()
 	}
 	
 
