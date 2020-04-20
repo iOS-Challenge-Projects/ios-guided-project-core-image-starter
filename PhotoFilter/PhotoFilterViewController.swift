@@ -5,6 +5,9 @@ import Photos
 
 class PhotoFilterViewController: UIViewController {
 
+    private var originaImage: UIImage?
+    private var context = CIContext(options: nil)
+
 	@IBOutlet weak var brightnessSlider: UISlider!
 	@IBOutlet weak var contrastSlider: UISlider!
 	@IBOutlet weak var saturationSlider: UISlider!
@@ -19,7 +22,11 @@ class PhotoFilterViewController: UIViewController {
         print(filter.attributes)
 	}
     
-    
+    func filterImage(_ image: UIImage) -> UIImage? {
+        
+        
+        return nil
+    }
     
     
     
