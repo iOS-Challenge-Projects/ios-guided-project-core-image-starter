@@ -24,8 +24,30 @@ class PhotoFilterViewController: UIViewController {
     
     func filterImage(_ image: UIImage) -> UIImage? {
         
+        //Convert the UIImage -> CGImage -> CIImage (CoreImage)
+        guard let cgImage = image.cgImage  else { return nil }
         
-        return nil
+        //convert image to be a cgImage
+        let ciImage = CIImage(cgImage: cgImage)
+        
+        //initialize filter
+        let filter = CIFilter.colorControls()
+        filter.inputImage = ciImage
+        
+        //Sliders confiuguration
+        filter.brightness = brightnessSlider.value
+        filter.contrast = contrastSlider.value
+        filter.saturation = saturationSlider.value
+        
+        //Unwrap the converted image
+        guard let outputCIImage = filter.outputImage else {
+            return nil }
+        
+        //Use our own context for effeciancy to create a CGImage
+        guard let outputCGImage = context.createCGImage(outputCIImage, from: CGRect(origin: .zero, size: image.size)) else { return nil }
+        
+        //Revert image back to UIImage to use in the view
+        return UIImage(cgImage: outputCGImage)
     }
     
     
