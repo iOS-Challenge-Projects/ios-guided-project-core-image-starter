@@ -5,7 +5,12 @@ import Photos
 
 class PhotoFilterViewController: UIViewController {
 
-    private var originaImage: UIImage?
+    private var originaImage: UIImage? {
+        didSet{
+            updateViews()
+        }
+    }
+    
     private var context = CIContext(options: nil)
 
 	@IBOutlet weak var brightnessSlider: UISlider!
@@ -15,12 +20,17 @@ class PhotoFilterViewController: UIViewController {
 	
 	override func viewDidLoad() {
 		super.viewDidLoad()
-        
-        let filter = CIFilter.colorControls()
-        print(filter)
-        
-        print(filter.attributes)
+
 	}
+    
+    func updateViews() {
+        if let originaImage = originaImage {
+            imageView.image = filterImage(originaImage)
+        } else {
+            //Could use a place holder image instead of nil
+            imageView.image = nil
+        }
+    }
     
     func filterImage(_ image: UIImage) -> UIImage? {
         
@@ -58,25 +68,28 @@ class PhotoFilterViewController: UIViewController {
 	@IBAction func choosePhotoButtonPressed(_ sender: Any) {
 		// TODO: show the photo picker so we can choose on-device photos
 		// UIImagePickerController + Delegate
+        
+        
 	}
 	
 	@IBAction func savePhotoButtonPressed(_ sender: UIButton) {
 		// TODO: Save to photo library
+        
 	}
 	
 
 	// MARK: Slider events
 	
 	@IBAction func brightnessChanged(_ sender: UISlider) {
-
+        updateViews()
 	}
 	
 	@IBAction func contrastChanged(_ sender: Any) {
-
+        updateViews()
 	}
 	
 	@IBAction func saturationChanged(_ sender: Any) {
-
+        updateViews()
 	}
 }
 
