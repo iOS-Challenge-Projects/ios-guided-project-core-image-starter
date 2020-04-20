@@ -106,7 +106,7 @@ class PhotoFilterViewController: UIViewController {
         //Unwrap image
         guard let originalImage = originalImage else { return }
         //Pass image to filter original image using our method
-        guard let processImage = filterImage(originalImage) else { return }
+        guard let processImage = filterImage(originalImage.flattened) else { return }
         
         //Request access
         PHPhotoLibrary.requestAuthorization { (status) in
@@ -116,6 +116,7 @@ class PhotoFilterViewController: UIViewController {
                 //Optional show user how to enable
                 //Privacy permission in setting
                 //by using a hot link to take user to the settings
+                UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!)
                 return
             }
             
