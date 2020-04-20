@@ -44,6 +44,8 @@ class PhotoFilterViewController: UIViewController {
     
 	override func viewDidLoad() {
 		super.viewDidLoad()
+        
+        originalImage = imageView.image
 	}
     
     
@@ -61,8 +63,8 @@ class PhotoFilterViewController: UIViewController {
     }
     
     func updateViews() {
-        if let originaImage = originalImage {
-            imageView.image = filterImage(originaImage)
+        if let scaledImage = scaledImage {
+            imageView.image = filterImage(scaledImage)
         } else {
             //Could use a place holder image instead of nil
             imageView.image = nil
@@ -102,7 +104,7 @@ class PhotoFilterViewController: UIViewController {
 	@IBAction func choosePhotoButtonPressed(_ sender: Any) {
 		// TODO: show the photo picker so we can choose on-device photos
 		// UIImagePickerController + Delegate
-        
+        presentImagePickerController()
         
 	}
 	
